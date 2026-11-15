@@ -76,6 +76,33 @@ def consultar_sazonalidade(produto: str = None):
         return df.to_dict(orient="records")
     except Exception as e:
         return f"Erro ao processar a consulta de sazonalidade: {e}"
+
+def consultar_pedidos(comprador: str = None, status: str = None):
+    try:
+        file_path = os.path.join(PROCESSED_DIR, "pedidos.json")
+        df = pd.read_json(file_path)
+
+        if comprador:
+            if "comprador" in df.columns:
+                df = df[df["comprador"].str.contains(comprador, case=False, na=False)]
+            else:
+                return "Erro: coluna 'comprador' não encontrada nos pedidos."
+
+            if df.empty:
+                return f"Nenhum pedido encontrado para o comprador: {comprador}"
+
+        if status:
+            if "status" in df.columns:
+                df = df[df["status"].str.contains(status, case=False, na=False)]
+            else:
+                return "Erro: coluna 'status' não encontrada nos pedidos."
+
+            if df.empty:
+                return f"Nenhum pedido encontrado com o status: {status}"
+
+        return df.to_dict(orient="records")
+    except Exception as e:
+        return f"Erro ao processar a consulta de pedidos: {e}"
     
 if __name__ == "__main__":
     print("--- Testando Ferramentas para Agente de IA ---")
@@ -90,3 +117,6 @@ if __name__ == "__main__":
 
     print("\n4. Consulta de Sazonalidade:")
     print(consultar_sazonalidade())
+
+    print("\n5. Consulta de Pedidos:")
+    print(consultar_pedidos())

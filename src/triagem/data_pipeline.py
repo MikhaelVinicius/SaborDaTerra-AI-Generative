@@ -118,6 +118,8 @@ def executar_pipeline():
         df_sazonalidade_limpo.to_csv(os.path.join(PROCESSED_DIR, "sazonalidade_tratado.csv"), index=False)
         df_lotes_limpo.to_csv(os.path.join(PROCESSED_DIR, "lotes_tratado.csv"), index=False)
 
+        with open(os.path.join(PROCESSED_DIR, "pedidos.json"), "w", encoding="utf-8") as f:
+            json.dump(pedidos_json, f, ensure_ascii=False, indent=4)
         
         print("Dados limpos e salvos com sucesso em 'data/processed/'!")
         
