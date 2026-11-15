@@ -21,6 +21,81 @@ O despacho recebe uma chamada estruturada; ele não interpreta mensagens em ling
 
 As três consultas estruturadas usam os CSVs locais. Preços e pagamentos são devolvidos conforme os dados, sem calcular descontos nem classificar pendências como atrasadas. As respostas de lote não incluem nome ou CPF do produtor.
 
+## Comportamento esperado das respostas
+
+### Resumo do produtor
+
+- **Entrada:** `producer_id`, `start_date` e `end_date`. As datas usam `AAAA-MM-DD` e o intervalo inclui os dois extremos.
+- **Cálculo:** considera somente linhas de venda do produtor no período. `total_sales` e `total_quantity_kg` somam os campos do `financeiro.csv`; os pagamentos são separados por `status_pagamento` (`pago`, `pendente` e `unclassified` para qualquer outro valor).
+- **Saída:** ID e nome cadastrado do produtor, período consultado, quantidade de transações, total vendido, quantidade registrada, valores e contagens por status de pagamento e arquivo-fonte.
+- **Produtor existente sem vendas no período:** informar que não há vendas no intervalo e mostrar totais e contagens iguais a zero.
+- **Produtor desconhecido:** informar que o produtor não foi encontrado; não apresentar isso como um relatório zerado.
+- **Data inválida, intervalo invertido ou arquivo ausente/inválido:** informar o erro e pedir correção ou revisão; não substituir erro por zero.
+- **Limites:** o resumo não classifica pagamentos como atrasados e não inclui pedidos alocados. Pedidos não são vendas e só podem ser incluídos quando outra etapa fornecer uma alocação confirmada.
+
+### Consulta de preços
+
+- **Entrada:** nome do produto em `product_query`.
+- A busca ignora maiúsculas/minúsculas e acentos. Retorna produtos de nome normalizado idêntico em `matches` e variantes cujo nome começa com a consulta em `suggestions`; não é uma busca aproximada geral.
+- **Correspondência exata:** apresentar o nome completo, unidade, preços e observações disponíveis. Mostrar descontos e volume mínimo exatamente como informados, sem calcular um preço descontado.
+- **Somente variantes:** a ferramenta e seu formatador apresentam que não houve correspondência exata e listam todas as variantes pelo nome completo. Não selecionam nem confirmam um preço. A decisão de perguntar ao usuário qual variante deseja consultar pertence ao comportamento conversacional definido pela função de Prompt/Parser.
+- **Nenhuma correspondência ou variante:** dizer que o produto não foi encontrado na tabela consultada; não chutar produto ou preço.
+- Identificar sempre o período `2026-10`. Não apresentar esses valores como atuais para outro período.
+
+### Consulta de lote
+
+- **Entrada:** `lot_id`; a comparação ignora maiúsculas/minúsculas e espaços nas extremidades.
+- **Lote encontrado:** apresentar o ID e somente os campos disponíveis: datas de colheita e entrega, ID do produtor, produto, quantidade, comprador, pedido, temperatura de transporte, validade, inspeção e observações. Informar `lotes.csv` como fonte.
+- Omitir nome e CPF do produtor. Não completar campos ausentes por inferência.
+- **Lote não encontrado:** responder “Lote não encontrado.”
+- **ID duplicado ou dados inválidos:** informar que a base precisa de revisão; não escolher um dos registros.
+
+### Rascunho de notificação ao produtor
+
+`format_producer_order_notification` é um formatador local que recebe o nome de um produtor e uma lista explícita de itens já alocados a ele. Cada item contém `product`, `quantity` e `unit`. A função não define como os itens foram alocados, não escolhe produtores, não interpreta a mensagem do comprador e não envia a notificação.
+
+```text
+Olá, [nome do produtor]!
+
+Há um novo pedido com os seguintes itens destinados a você:
+- [produto] — [quantidade] [unidade]
+- [produto] — [quantidade] [unidade]
+
+Prazo de entrega: [prazo confirmado]
+Referência: [identificador do pedido, se disponível]
+[instrução de confirmação, se definida pela cooperativa]
+```
+
+Se não houver alocação confirmada, produto, quantidade ou prazo necessários, não produzir uma mensagem pronta para envio: informar quais dados faltam. O resultado é somente um rascunho; canal, destinatário e envio dependem de definições e integração próprias. Não incluir CPF, dados bancários, chave Pix ou dados pessoais do comprador.
+
+Exemplo com valores ilustrativos; quem chama a função deve substituir os valores pelos dados da alocação confirmada:
+
+```python
+from sabor_agent import format_producer_order_notification
+
+draft = format_producer_order_notification(
+    producer_name="Nome confirmado do produtor",
+    allocated_items=[
+        {"product": "queijo coalho", "quantity": "30", "unit": "kg"},
+        {"product": "manteiga de garrafa", "quantity": "10", "unit": "kg"},
+    ],
+    delivery_deadline="sexta-feira",
+    order_reference="PED-EXEMPLO-001",
+    confirmation_instruction="Confirme o recebimento deste aviso.",
+)
+```
+
+O formatador é um helper e ainda não foi registrado como ferramenta do modelo: a integração só deve fornecê-lo ao agente quando houver uma fonte definida para a alocação confirmada.
+
+## Exemplos de respostas esperadas
+
+- **Produtor cadastrado sem vendas no intervalo:** apresentar o período, totais iguais a zero e a fonte `financeiro.csv`; não dizer que o produtor não existe.
+- **Produtor desconhecido:** “Produtor [ID] não encontrado.”
+- **Busca de preço com variantes:** “Não encontrei correspondência exata para [consulta]. Variantes disponíveis: [lista com nomes completos e valores da fonte].” A ferramenta não escolhe uma variante.
+- **Busca de preço sem resultado:** “Não encontrei [produto] na tabela de preços de outubro de 2026.”
+- **Lote inexistente:** “Lote não encontrado.”
+- **Pedido sem alocação confirmada:** não escolher produtores nem preparar uma notificação direcionada. O formato e o momento de comunicar essa ausência dependem do contrato com Triagem/Alocação e do comportamento conversacional.
+
 ## Chamar as ferramentas em Python
 
 ```python

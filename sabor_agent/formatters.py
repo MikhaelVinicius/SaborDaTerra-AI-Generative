@@ -1,6 +1,6 @@
 """Formata resultados tabulares sem acrescentar conclusões aos dados."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -123,6 +123,65 @@ def format_lot_lookup(lot: Mapping[str, Any] | None) -> str:
     return "\n".join(lines)
 
 
+def format_producer_order_notification(
+    producer_name: str,
+    allocated_items: Sequence[Mapping[str, Any]],
+    *,
+    delivery_deadline: str | None = None,
+    order_reference: str | None = None,
+    confirmation_instruction: str | None = None,
+) -> str:
+    """Formata um rascunho a partir de itens já alocados a um produtor.
+
+    Esta função não interpreta pedidos, escolhe produtores nem envia mensagens.
+    Cada item precisa conter ``product``, ``quantity`` e ``unit``.
+    """
+    name = _required_notification_value(producer_name, "producer_name")
+    if isinstance(allocated_items, (str, bytes)) or not isinstance(
+        allocated_items, Sequence
+    ):
+        raise ValueError("allocated_items deve ser uma sequência de itens já alocados.")
+    if not allocated_items:
+        raise ValueError("allocated_items deve conter ao menos um item já alocado.")
+
+    item_lines = []
+    for index, item in enumerate(allocated_items, start=1):
+        if not isinstance(item, Mapping):
+            raise ValueError(f"allocated_items[{index - 1}] deve ser um objeto.")
+        product = _required_notification_value(
+            item.get("product"), f"allocated_items[{index - 1}].product"
+        )
+        quantity = _required_notification_value(
+            item.get("quantity"), f"allocated_items[{index - 1}].quantity"
+        )
+        unit = _required_notification_value(
+            item.get("unit"), f"allocated_items[{index - 1}].unit"
+        )
+        item_lines.append(f"- {product} — {quantity} {unit}")
+
+    lines = [
+        f"Olá, {name}!",
+        "",
+        "Há um novo pedido com os seguintes itens destinados a você:",
+        *item_lines,
+    ]
+
+    optional_lines = (
+        ("Prazo de entrega", delivery_deadline),
+        ("Referência", order_reference),
+    )
+    for label, value in optional_lines:
+        text = _optional_notification_value(value)
+        if text:
+            lines.append(f"{label}: {text}")
+
+    instruction = _optional_notification_value(confirmation_instruction)
+    if instruction:
+        lines.append(instruction)
+
+    return "\n".join(lines)
+
+
 def _format_price_row(row: Mapping[str, Any]) -> str:
     product = _present(row.get("product"))
     unit = _present(row.get("unit"))
@@ -204,3 +263,17 @@ def _append_source(lines: list[str], value: Any) -> None:
     source = _present(value)
     if source:
         lines.append(f"Fonte: {source}")
+
+
+def _required_notification_value(value: Any, field_name: str) -> str:
+    text = _optional_notification_value(value)
+    if text is None:
+        raise ValueError(f"{field_name} não pode estar vazio.")
+    return text
+
+
+def _optional_notification_value(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = " ".join(str(value).split())
+    return text or None

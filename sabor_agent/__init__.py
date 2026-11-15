@@ -12,6 +12,7 @@ from sabor_agent.formatters import (
     format_lot_lookup,
     format_price_lookup,
     format_producer_summary,
+    format_producer_order_notification,
 )
 from sabor_agent.orchestrator import ToolDispatchError, dispatch_tool, get_tool_definitions
 
@@ -22,6 +23,7 @@ __all__ = [
     "format_lot_lookup",
     "format_price_lookup",
     "format_producer_summary",
+    "format_producer_order_notification",
     "ToolDispatchError",
     "dispatch_tool",
     "get_tool_definitions",
