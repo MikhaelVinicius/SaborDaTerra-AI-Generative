@@ -1,6 +1,9 @@
+import pytest
+
 from sabor_agent.formatters import (
     format_lot_lookup,
     format_price_lookup,
+    format_producer_order_notification,
     format_producer_summary,
 )
 
@@ -139,3 +142,74 @@ def test_format_lot_lookup_omits_source_when_result_has_no_source():
 
     assert formatted == "Lote LOT-1"
     assert "Fonte:" not in formatted
+
+
+def test_format_producer_order_notification_formats_confirmed_allocation():
+    draft = format_producer_order_notification(
+        producer_name="Ana Silva",
+        allocated_items=[
+            {"product": "mel silvestre", "quantity": "10", "unit": "kg"},
+            {"product": "queijo coalho", "quantity": "5", "unit": "unidades"},
+        ],
+        delivery_deadline="sexta-feira",
+        order_reference="PED-001",
+        confirmation_instruction="Confirme o recebimento deste aviso.",
+    )
+
+    assert draft == (
+        "Olá, Ana Silva!\n\n"
+        "Há um novo pedido com os seguintes itens destinados a você:\n"
+        "- mel silvestre — 10 kg\n"
+        "- queijo coalho — 5 unidades\n"
+        "Prazo de entrega: sexta-feira\n"
+        "Referência: PED-001\n"
+        "Confirme o recebimento deste aviso."
+    )
+
+
+def test_format_producer_order_notification_omits_unspecified_optional_details():
+    draft = format_producer_order_notification(
+        producer_name="Ana",
+        allocated_items=[{"product": "mel", "quantity": "2", "unit": "kg"}],
+    )
+
+    assert draft == (
+        "Olá, Ana!\n\n"
+        "Há um novo pedido com os seguintes itens destinados a você:\n"
+        "- mel — 2 kg"
+    )
+
+
+@pytest.mark.parametrize(
+    ("producer_name", "allocated_items", "expected_error"),
+    [
+        (
+            " ",
+            [{"product": "mel", "quantity": "2", "unit": "kg"}],
+            "producer_name não pode estar vazio.",
+        ),
+        ("Ana", [], "allocated_items deve conter ao menos um item já alocado."),
+        (
+            "Ana",
+            [{"product": " ", "quantity": "2", "unit": "kg"}],
+            "allocated_items[0].product não pode estar vazio.",
+        ),
+        (
+            "Ana",
+            [{"product": "mel", "quantity": None, "unit": "kg"}],
+            "allocated_items[0].quantity não pode estar vazio.",
+        ),
+        (
+            "Ana",
+            [{"product": "mel", "quantity": "2", "unit": " "}],
+            "allocated_items[0].unit não pode estar vazio.",
+        ),
+    ],
+)
+def test_format_producer_order_notification_rejects_missing_required_values(
+    producer_name, allocated_items, expected_error
+):
+    with pytest.raises(ValueError) as error:
+        format_producer_order_notification(producer_name, allocated_items)
+
+    assert str(error.value) == expected_error

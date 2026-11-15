@@ -17,9 +17,53 @@ O despacho recebe uma chamada estruturada; ele não interpreta mensagens em ling
 |---|---|---|
 | `get_producer_summary` | `producer_id`, `start_date`, `end_date` | Vendas e pagamentos do produtor no período inclusivo, com datas `AAAA-MM-DD`; usa o nome cadastrado quando disponível e mantém o ID como referência. |
 | `lookup_price` | `product_query` | Preços da tabela de outubro de 2026. Retorna `matches` exatos e `suggestions` de variantes sem escolher uma. |
-| `lookup_lot` | `lot_id` | Campos disponíveis para o lote; retorna `None` quando não encontrado. |
+| `lookup_lot` | `lot_id` | Campos disponíveis para o lote. A API base retorna `None` quando não encontrado; o adaptador Cloud envolve o resultado em `{"found": false, "lot_id": ..., "lot": null}`. |
 
 As três consultas estruturadas usam os CSVs locais. Preços e pagamentos são devolvidos conforme os dados, sem calcular descontos nem classificar pendências como atrasadas. As respostas de lote não incluem nome ou CPF do produtor.
+
+## Adaptador para descoberta pelo agente
+
+A branch Cloud configura o módulo `sabor_agentes.tool`. Esse adaptador publica em `TOOLS` somente as três funções deste escopo: `get_producer_summary`, `lookup_price` e `lookup_lot`. As funções têm parâmetros tipados, docstrings de uso e retornos estruturados; elas delegam as consultas ao pacote `sabor_agent.data_tools`.
+
+O caminho padrão dos CSVs continua configurado internamente em `sabor_agent.data_tools` (`source/Facepe/`). O adaptador não recebe caminho de arquivo como argumento, então o modelo não pode escolher diretórios ou arquivos.
+
+### Resumo individual do produtor
+
+`get_producer_summary(producer_id, start_date, end_date)` consulta um único produtor em um intervalo inclusivo e devolve vendas, quantidade, contagem de transações e valores/contagens de pagamentos `paid`, `pending` e `unclassified`. Ele não consolida produtores nem duplica o relatório agregado produzido pela equipe de Dados.
+
+Trecho sintético usado nos testes para ilustrar os pagamentos retornados:
+
+```json
+{
+  "producer_id": "P001",
+  "period": {"start": "2026-10-01", "end": "2026-10-31"},
+  "payments": {
+    "paid": {"amount": "20.00", "transactions": 1},
+    "pending": {"amount": "30.00", "transactions": 1},
+    "unclassified": {"amount": "2.50", "transactions": 1}
+  }
+}
+```
+
+Os valores acima são de um cenário sintético dos testes; os resultados reais dependem das linhas encontradas nos CSVs.
+
+### Saída do adaptador de lotes
+
+`lookup_lot(lot_id)` sempre devolve um objeto JSON com `found`, `lot_id` e `lot`. Quando encontra o lote, `lot` contém os campos operacionais disponíveis; quando não encontra, retorna `found: false` e `lot: null`. Nome e CPF do produtor continuam omitidos.
+
+### Exemplo de uso e limites
+
+```python
+from sabor_agentes.tool import TOOLS, get_producer_summary
+
+# TOOLS é a lista descoberta pelo carregador da branch Cloud.
+assert get_producer_summary in TOOLS
+
+summary = get_producer_summary("P001", "2026-10-01", "2026-10-31")
+pagamentos_pendentes = summary["payments"]["pending"]
+```
+
+`lookup_price` mantém `matches` e `suggestions` separados e não escolhe variantes. O formatador de notificação ainda não aparece em `TOOLS`: ele depende de uma fonte de alocação confirmada.
 
 ## Comportamento esperado das respostas
 
@@ -164,8 +208,8 @@ Por padrão, os CSVs são lidos de `source/Facepe/`. `source/` é local e deve p
 
 ## Testes locais
 
-Para executar os testes das consultas, despacho e formatadores:
+Para executar os testes das consultas, despacho, formatadores e adaptador Cloud:
 
 ```powershell
-python -m pytest tests/test_data_tools.py tests/test_orchestrator.py tests/test_formatters.py -q
+python -m pytest tests/test_data_tools.py tests/test_orchestrator.py tests/test_formatters.py tests/test_sabor_agentes_tool.py -q
 ```
