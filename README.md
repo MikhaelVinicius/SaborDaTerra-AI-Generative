@@ -1,0 +1,1 @@
+Assistente de IA para a cooperativa Sabor da Terra que organiza pedidos, consulta documentos e avisa os produtores.
