@@ -1,20 +1,19 @@
 from .schemas import PedidoTriado, Comprador, PrazoEntrega
 from .parser import extrair_pedido_llm
 from .regras import aplicar_regras_negocio
+from .prompts import CATALOGO_OFICIAL
 
 def triar_pedido(
     texto: str,
     data_referencia: str,
-    catalogo_produtos: list[str],
-    fn_get_sazonalidade,
-    fn_get_produtores,
+    catalogo_produtos: list[str] = CATALOGO_OFICIAL,
     pedido_id: str | None = None
 ) -> dict:
     try:
         pedido = extrair_pedido_llm(texto, catalogo_produtos, data_referencia)
         pedido.pedido_id = pedido_id
         pedido = aplicar_regras_negocio(
-            pedido, data_referencia, catalogo_produtos, fn_get_sazonalidade, fn_get_produtores
+            pedido, data_referencia, catalogo_produtos
         )
         return pedido.model_dump()
     except Exception as e:

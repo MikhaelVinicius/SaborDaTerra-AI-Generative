@@ -1,20 +1,54 @@
+import os
+import pandas as pd
 from datetime import datetime
 from rapidfuzz import process, fuzz
 from .schemas import PedidoTriado, FlagAlerta
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROCESSED_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "data", "processed"))
+
 MESES_PT = {
-    1: "janeiro", 2: "fevereiro", 3: "marco", 4: "abril",
-    5: "maio", 6: "junho", 7: "julho", 8: "agosto",
-    9: "setembro", 10: "outubro", 11: "novembro", 12: "dezembro"
+    1: "jan", 2: "fev", 3: "mar", 4: "abr",
+    5: "mai", 6: "jun", 7: "jul", 8: "ago",
+    9: "set", 10: "out", 11: "nov", 12: "dez"
 }
+
+def carregar_bases():
+    df_produtores = pd.read_csv(os.path.join(PROCESSED_DIR, "produtores_tratado.csv"))
+    df_sazonalidade = pd.read_csv(os.path.join(PROCESSED_DIR, "sazonalidade_tratado.csv"))
+    df_produtores_ativos = df_produtores[df_produtores["status"].str.lower() == "ativo"].copy()
+    return df_produtores_ativos, df_sazonalidade
+
+
+def consultar_sazonalidade(produto: str, mes_col: str, df_sazonalidade: pd.DataFrame) -> tuple[str, str]:
+    produtos_saz = df_sazonalidade["produto"].dropna().tolist()
+    match = process.extractOne(produto.lower(), produtos_saz, scorer=fuzz.WRatio)
+    if not match or match[1] < 75:
+        return "desconhecido", ""
+    linha = df_sazonalidade[df_sazonalidade["produto"] == match[0]].iloc[0]
+    nivel = str(linha[mes_col]).strip().lower()
+    obs = str(linha["observacao"]) if pd.notna(linha["observacao"]) else ""
+    return nivel, obs
+
+def consultar_produtores(produto: str, df_produtores: pd.DataFrame) -> list[dict]:
+    encontrados = []
+    for _, row in df_produtores.iterrows():
+        lista_prod = [p.strip().lower() for p in str(row["produtos"]).split(",")]
+        match = process.extractOne(produto.lower(), lista_prod, scorer=fuzz.WRatio)
+        if match and match[1] >= 75:
+            encontrados.append({
+                "id": row["id"],
+                "nome": row["nome_completo"],
+                "organico": str(row["certificacao_organica"]).strip().lower() == "sim"
+            })
+    return encontrados
 
 def aplicar_regras_negocio(
     pedido: PedidoTriado,
     data_referencia: str,
-    catalogo_produtos: list[str],
-    fn_get_sazonalidade,      # Alterar quando pegar a base de dados
-    fn_get_produtores         # Alterar quando pegar a base de dados
+    catalogo_produtos: list[str]
 ) -> PedidoTriado:
+    df_produtores, df_sazonalidade = carregar_bases()
     
     if not pedido.comprador.nome:
         pedido.flags.append(FlagAlerta(
@@ -59,34 +93,40 @@ def aplicar_regras_negocio(
 
         item.produto = match[0]
 
-        em_safra = fn_get_sazonalidade(item.produto, mes_entrega)
-        if not em_safra:
+        nivel_safra, obs_safra = consultar_sazonalidade(item.produto, mes_entrega, df_sazonalidade)
+        if nivel_safra == "nenhuma":
             pedido.flags.append(FlagAlerta(
                 codigo="FORA_DE_SAFRA",
                 item=item.produto,
-                detalhe=f"{item.produto} está fora de safra em {mes_entrega}."
+                detalhe=f"{item.produto} está fora de safra em {mes_entrega}. {obs_safra}".strip()
             ))
 
-        produtores = fn_get_produtores(item.produto)
-        if item.producao == "organico":
-            produtores = [p for p in produtores if p.get("organico") is True]
-            if not produtores:
+        elif nivel_safra == "baixa":
+            pedido.flags.append(FlagAlerta(
+                codigo="SAFRA_BAIXA",
+                item=item.produto,
+                detalhe=f"{item.produto} está com disponibilidade baixa em {mes_entrega}. {obs_safra}".strip()
+            ))
+
+        produtores = consultar_produtores(item.produto, df_produtores)
+        if not produtores:
+            pedido.flags.append(FlagAlerta(
+                codigo="SEM_PRODUTOR_ATIVO",
+                item=item.produto,
+                detalhe=f"Nenhum produtor ativo encontrado para {item.produto}."
+            ))
+
+        elif item.producao == "organico":
+            produtores_org = [p for p in produtores if p["organico"] is True]
+            if not produtores_org:
                 pedido.flags.append(FlagAlerta(
                     codigo="SEM_PRODUTOR_ORGANICO",
                     item=item.produto,
                     detalhe=f"Nenhum produtor certificado para {item.produto} orgânico."
                 ))
 
-        capacidade_total = sum(p.get("capacidade", 0) for p in produtores)
-        if item.quantidade and capacidade_total > 0 and item.quantidade > capacidade_total:
-            pedido.flags.append(FlagAlerta(
-                codigo="QTD_ACIMA_CAPACIDADE",
-                item=item.produto,
-                detalhe=f"Pedido de {item.quantidade} excede capacidade total ({capacidade_total})."
-            ))
-
     codigos = {f.codigo for f in pedido.flags}
-    if codigos & {"PRODUTO_NAO_IDENTIFICADO", "FORA_DE_SAFRA", "QTD_ACIMA_CAPACIDADE", "SEM_PRODUTOR_ORGANICO"}:
+    if codigos & {"PRODUTO_NAO_IDENTIFICADO", "FORA_DE_SAFRA", "SEM_PRODUTOR_ATIVO", "SEM_PRODUTOR_ORGANICO"}:
         pedido.status = "bloqueado"
     elif pedido.flags or pedido.campos_ausentes:
         pedido.status = "revisar"

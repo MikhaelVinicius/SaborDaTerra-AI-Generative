@@ -17,6 +17,20 @@ Classifique a intenção da mensagem atual do usuário considerando o histórico
 - "conversa_geral": saudações ou dúvidas fora do escopo.
 """
 
+CATALOGO_OFICIAL = [
+    "goiaba paluma", "manga tommy", "acerola", "banana prata", "maracujá",
+    "cajá", "umbu", "graviola", "morango", "amora", "mirtilo", "framboesa",
+    "coco verde", "queijo coalho", "queijo manteiga", "ricota",
+    "manteiga de garrafa", "nata", "iogurte natural", "leite", "mel silvestre",
+    "mel de jandaíra", "própolis", "pólen", "cera de abelha", "alface",
+    "coentro", "cebolinha", "rúcula", "espinafre", "couve", "hortelã",
+    "manjericão", "tomate", "tomate cereja", "pimentão", "pepino",
+    "berinjela", "quiabo", "macaxeira", "inhame", "batata doce",
+    "farinha de mandioca", "tapioca", "goma", "rapadura", "açúcar mascavo",
+    "melado", "geleia de frutas", "doce de goiaba", "frango caipira",
+    "ovos caipira", "feijão", "milho", "fava"
+]
+
 def montar_prompt_extracao(catalogo_produtos: list[str], data_referencia: str) -> str:
     lista_prod = ", ".join(catalogo_produtos)
     return f"""
@@ -40,8 +54,8 @@ Pedido: "Oi, aqui é Carla do Restaurante Raízes. Preciso de 30kg de queijo coa
 Saída esperada:
 - comprador: {{"nome": "Restaurante Raízes", "tipo": "restaurante", "contato": "Carla"}}
 - itens: [
-    {{"texto_original": "30kg de queijo coalho", "produto": "Queijo Coalho", "quantidade": 30.0, "unidade": "kg", "producao": "nao_informado"}},
-    {{"texto_original": "umas caixas de goiaba", "produto": "Goiaba", "quantidade": null, "unidade": "caixa", "producao": "nao_informado"}}
+    {{"texto_original": "30kg e queijo coalho", "produto": "queijo coalho", "quantidade": 30.0, "unidade": "kg", "producao": "nao_informado"}},
+    {{"texto_original": "umas caixas de goiaba", "produto": "goiaba", "quantidade": null, "unidade": "caixa", "producao": "nao_informado"}}
   ]
 - prazo: {{"texto_original": "pra sexta", "data_estimada": "2026-11-13"}}
 - urgencia: "alta" (justificativa: "Entrega solicitada para o dia seguinte com item perecível")
@@ -55,7 +69,7 @@ Pedido: "Manda 40 litros de mel orgânico pro PNAE dia 25/11."
 Saída esperada:
 - comprador: {{"nome": "PNAE", "tipo": "governo", "contato": null}}
 - itens: [
-    {{"texto_original": "40 litros de mel orgânico", "produto": "Mel", "quantidade": 40.0, "unidade": "litro", "producao": "organico"}}
+    {{"texto_original": "40 litros de mel orgânico", "produto": "mel", "quantidade": 40.0, "unidade": "litro", "producao": "organico"}}
   ]
 - prazo: {{"texto_original": "dia 25/11", "data_estimada": "2026-11-25"}}
 - urgencia: "baixa" (justificativa: "Prazo de 10 dias e produto não perecível a curto prazo")

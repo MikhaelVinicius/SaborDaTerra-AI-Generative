@@ -1,11 +1,15 @@
+import os 
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from pydantic import ValidationError
 from .schemas import PedidoTriado, IntencaoUsuario
 from .prompts import PROMPT_ROTEADOR, montar_prompt_extracao
 
+load_dotenv()
+
 client = genai.Client()
-MODELO = "gemini-3.8-flash"
+MODELO = os.getenv("GEMINI_MODEL","gemini-3.8-flash")
 
 def classificar_intencao(mensagem: str, historico_recente: str = "") -> IntencaoUsuario:
     conteudo = f"<historico>\n{historico_recente}\n</historico>\n<mensagem>\n{mensagem}\n</mensagem>"
