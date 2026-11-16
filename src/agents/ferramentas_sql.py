@@ -30,7 +30,13 @@ def _seguro(funcao):
 
 @_seguro
 def consultar_faturamento_por_produtor(nome_produtor: str | None = None):
-    sql = "SELECT produtor_nome, SUM(valor_total) AS faturamento_total FROM financeiro"
+    sql = (
+        "SELECT produtor_nome, "
+        "SUM(valor_total) AS faturamento_total, "
+        "SUM(CASE WHEN status_pagamento = 'pago' THEN valor_total ELSE 0 END) AS recebido, "
+        "SUM(CASE WHEN status_pagamento = 'pendente' THEN valor_total ELSE 0 END) AS pendente "
+        "FROM financeiro"
+    )
     params = {}
     if nome_produtor:
         sql += " WHERE LOWER(produtor_nome) LIKE :n"
