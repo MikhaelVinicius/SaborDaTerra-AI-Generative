@@ -45,7 +45,7 @@ def extrair_pedido_llm(
 
     for tentativa in range(tentativas + 1):
         try:
-            resp = client.models.generate_content(
+            resp = _get_client().models.generate_content(
                 model=MODELO,
                 contents=prompt_atual,
                 config=types.GenerateContentConfig(
