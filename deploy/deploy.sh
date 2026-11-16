@@ -7,7 +7,7 @@ PROJECT_ID="${PROJECT_ID:?Defina PROJECT_ID}"
 REGION="${REGION:-southamerica-east1}"
 SERVICE="${SERVICE:-sabor-da-terra}"
 SA_EMAIL="${SA_NAME:-sabor-da-terra-app}@$PROJECT_ID.iam.gserviceaccount.com"
-MODEL="${GEMINI_MODEL:-gemini-3.5-flash}"
+MODEL="${GEMINI_MODEL:-gemini-3.8-flash}"
 APP_PASSWORD="${APP_PASSWORD:-}"
 
 # --session-affinity : Streamlit usa WebSocket e guarda a sessão em memória

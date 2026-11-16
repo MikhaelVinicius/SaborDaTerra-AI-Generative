@@ -15,7 +15,7 @@ except ImportError:
     pass
 
 # Modelo do orquestrador (troque sem mexer no código)
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
 
 # Credenciais: mesma regra do sabor_rag (chave do AI Studio).
