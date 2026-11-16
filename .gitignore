@@ -1,1 +1,5 @@
 .env
+__pycache__/
+*.pyc
+data/sabor_da_terra.db
+data/chroma_db/

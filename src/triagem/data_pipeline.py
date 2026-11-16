@@ -16,16 +16,12 @@ def limpar_produtores(df):
     return df
 
 def limpar_preco(df):
-    if "preco" in df.columns:
-        df["preco"] = (
-            df['preco']
-            .astype(str)
-            .str.replace("R$", "", regex=False)
-            .str.replace(".", "", regex=False)
-            .str.replace(",", ".", regex=False)
-            .str.strip()
-        )
-        df["preco"] = pd.to_numeric(df["preco"], errors="coerce")
+    for col in ["preco_convencional", "preco_organico"]:
+        if col in df.columns:
+            convertido = pd.to_numeric(df[col], errors="coerce")  
+            invalidos = df.loc[convertido.isna() & df[col].notna(), col].unique()
+            print(f"[preços] {col}: valores não numéricos -> {list(invalidos)}")
+            df[col] = convertido
     return df
 
 def limpar_financeiro(df):
