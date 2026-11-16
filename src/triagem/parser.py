@@ -7,15 +7,20 @@ from pydantic import ValidationError
 from .schemas import PedidoTriado, IntencaoUsuario
 from .prompts import PROMPT_ROTEADOR, montar_prompt_extracao
 
-load_dotenv(override=True)
+load_dotenv()
 
-client = genai.Client()
 MODELO = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+_client: genai.Client | None = None
 
+def _get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        _client = genai.Client()
+    return _client
 
 def classificar_intencao(mensagem: str, historico_recente: str = "") -> IntencaoUsuario:
     conteudo = f"<historico>\n{historico_recente}\n</historico>\n<mensagem>\n{mensagem}\n</mensagem>"
-    resp = client.models.generate_content(
+    resp = _get_client().models.generate_content(
         model=MODELO,
         contents=conteudo,
         config=types.GenerateContentConfig(

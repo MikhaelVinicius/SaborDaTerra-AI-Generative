@@ -102,6 +102,11 @@ def rodar_pedidos_json(limite: int = 15):
         print("-" * 60)
         time.sleep(13)
 
+    def test_importacao_e_bases_existem():
+        """Valida offline que o pipeline importa e o arquivo de pedidos existe."""
+        assert callable(triar_pedido)
+        assert os.path.exists(PEDIDOS_JSON_PATH)    
+
 
 if __name__ == "__main__":
     # rodar_cenarios_sinteticos()
