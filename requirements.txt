@@ -1,0 +1,6 @@
+# Interface, orquestrador e testes (Cloud/Fullstack/DevOps)
+# Cada módulo da equipe acrescenta aqui as suas dependências.
+google-genai>=1.0.0
+python-dotenv>=1.0.1
+streamlit>=1.67,<2
+pytest>=8.0.0

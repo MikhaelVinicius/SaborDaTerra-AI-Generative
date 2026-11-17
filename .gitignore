@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-.env
-__pycache__/
-*.pyc
-data/sabor_da_terra.db
-data/chroma_db/
-=======
-# Segredos e configurações locais
+﻿# Segredos e configurações locais
 .env
 .env.*
 !.env.example
@@ -34,4 +27,8 @@ Thumbs.db
 
 # Contexto local da aplicação
 /source/
->>>>>>> origin/feature/engenheiro-agentes-automacao
+
+# Bancos de dados locais
+data/sabor_da_terra.db
+data/chroma_db/
+data/chroma/
