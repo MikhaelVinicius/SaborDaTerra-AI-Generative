@@ -11,20 +11,35 @@ from src.database.config import (CHROMA_COLLECTION, CHROMA_DIR, DOCUMENTS_DIR,
                                  EMBEDDING_MODEL)
 
 EXTENSOES = {".pdf", ".txt", ".md"}
-DIST_MAX = 0.32   
-MIN_CHARS = 150   
+DIST_MAX = 0.32   # distância de cosseno máxima para um trecho ser considerado relevante
+MIN_CHARS = 150   # trechos menores (ex.: só rodapé/assinatura) são descartados
 splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=200)
 _cliente = None
 
 
 def _mascarar(texto: str) -> str:
+    """Oculta dados sensíveis antes de indexar e antes de devolver trechos.
+
+    Mascara CPF, agência e conta bancária (aceitando pontos e hífens nos
+    números, ex.: 12345.678-9) e a chave PIX. Não altera CNPJ de empresas.
+    """
     texto = re.sub(r"\d{3}\.\d{3}\.\d{3}-\d{2}", "[CPF omitido]", texto)
-    texto = re.sub(r"(Ag\.|C/C)[ \t]*[\d\-]+", r"\1 [omitido]", texto)
+    texto = re.sub(r"(Ag\.|C/C)[ \t]*\d[\d.\-]*", r"\1 [omitido]", texto)
     texto = re.sub(r"(Chave PIX:)[ \t]*.+", r"\1 [omitido]", texto)
     return texto
 
 
 def embed(textos: list[str], tarefa: str) -> list[list[float]]:
+    """Gera embeddings com o modelo Gemini, em lotes de 50 textos.
+
+    Args:
+        textos: textos a vetorizar.
+        tarefa: tipo de tarefa do embedding: 'RETRIEVAL_DOCUMENT' para
+            indexar trechos ou 'RETRIEVAL_QUERY' para perguntas.
+
+    Returns:
+        Lista de vetores, na mesma ordem dos textos.
+    """
     global _cliente
     if _cliente is None:
         _cliente = genai.Client()
@@ -40,6 +55,12 @@ def embed(textos: list[str], tarefa: str) -> list[list[float]]:
 
 
 def ler_paginas(caminho: Path) -> list[tuple[int, str]]:
+    """Lê um documento e devolve uma lista de (número da página, texto).
+
+    PDFs são lidos página a página (pdfplumber); .txt e .md contam como
+    página 1. Páginas sem texto extraível (PDF escaneado) voltam com texto
+    vazio e precisariam de OCR.
+    """
     if caminho.suffix.lower() == ".pdf":
         import pdfplumber
         with pdfplumber.open(caminho) as pdf:
@@ -52,6 +73,14 @@ def ler_paginas(caminho: Path) -> list[tuple[int, str]]:
 
 
 def indexar():
+    """Recria a coleção do ChromaDB a partir dos documentos da cooperativa.
+
+    Apaga a coleção existente, lê todos os .pdf/.txt/.md de DOCUMENTS_DIR,
+    mascara dados sensíveis, divide em trechos (1200 caracteres, 200 de
+    sobreposição), gera embeddings (usa a API do Gemini) e grava com os
+    metadados fonte, categoria (primeira pasta) e página. Rode de novo
+    sempre que os documentos ou a regra de mascaramento mudarem.
+    """
     chroma = chromadb.PersistentClient(path=str(CHROMA_DIR))
     try:
         chroma.delete_collection(CHROMA_COLLECTION)
@@ -64,14 +93,14 @@ def indexar():
         if arquivo.suffix.lower() not in EXTENSOES:
             continue
         rel = arquivo.relative_to(DOCUMENTS_DIR).as_posix()
-        categoria = rel.split("/")[0] 
+        categoria = rel.split("/")[0]
 
         ids, trechos, metas = [], [], []
         for pagina, texto in ler_paginas(arquivo):
             if not texto:
                 sem_texto.append(f"{rel} p.{pagina}")
                 continue
-            texto = _mascarar(texto) 
+            texto = _mascarar(texto)
             for n, trecho in enumerate(splitter.split_text(texto)):
                 ids.append(f"{rel}|p{pagina}|c{n}")
                 trechos.append(trecho)
@@ -91,6 +120,18 @@ def indexar():
 
 
 def buscar(pergunta: str, k: int = 5, categoria: str | None = None) -> list[dict]:
+    """Busca semântica bruta no ChromaDB, sem filtro de relevância.
+
+    Args:
+        pergunta: texto da consulta.
+        k: quantidade de trechos a retornar.
+        categoria: restringe a 'certificacoes', 'contratos' ou 'fichas_tecnicas'.
+
+    Returns:
+        Lista de dicts com trecho (mascarado), fonte, pagina e distancia
+        (menor = mais parecido). Para uso do agente, prefira
+        consultar_documentos, que aplica o limiar de relevância.
+    """
     colecao = chromadb.PersistentClient(path=str(CHROMA_DIR)).get_collection(CHROMA_COLLECTION)
     r = colecao.query(
         query_embeddings=embed([pergunta], "RETRIEVAL_QUERY"),
@@ -104,10 +145,32 @@ def buscar(pergunta: str, k: int = 5, categoria: str | None = None) -> list[dict
 
 
 def consultar_documentos(pergunta: str, categoria: str | None = None, k: int = 5) -> dict:
-    """Busca trechos nos documentos da cooperativa (certificações orgânicas, laudos
-    sanitários, inspeção ADAGRO, contratos e fichas técnicas) e retorna os trechos
-    com o arquivo de origem. categoria opcional: 'certificacoes', 'contratos' ou
-    'fichas_tecnicas'. Use para perguntas sobre o conteúdo de documentos."""
+    """Busca trechos nos documentos da cooperativa e devolve o texto com o arquivo de origem.
+
+    Use para perguntas sobre o CONTEÚDO de documentos: certificados orgânicos
+    (número, validade, produtos certificados, renovação), laudos sanitários,
+    inspeção ADAGRO, contratos (prazo de pagamento, vigência, itens e preços
+    contratados, penalidades) e fichas técnicas dos produtos. Para dados
+    cadastrais, preços da tabela, lotes ou faturamento, use as ferramentas
+    consultar_*, que leem o banco.
+
+    Dicas: faça perguntas específicas e cite o nome do produtor, do comprador
+    ou do produto; os resultados podem incluir trechos de outros documentos
+    parecidos, então confira a fonte de cada trecho antes de responder.
+
+    Args:
+        pergunta: pergunta em linguagem natural.
+        categoria: opcional, restringe a busca a 'certificacoes', 'contratos'
+            ou 'fichas_tecnicas'.
+        k: quantos trechos candidatos buscar (padrão 5).
+
+    Returns:
+        {'resultados': [{'fonte': arquivo, 'trechos': [texto, ...]}, ...]}
+        com os trechos relevantes agrupados por arquivo. Se nada for
+        relevante, devolve {'erro': ..., 'instrucao': ...}: nesse caso
+        informe ao usuário que não encontrou e não invente. Cite sempre o
+        arquivo de origem.
+    """
     try:
         itens = buscar(pergunta, k, categoria)
     except Exception as e:
