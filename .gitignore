@@ -1,3 +1,34 @@
+﻿# Segredos e configurações locais
 .env
+.env.*
+!.env.example
+
+# Ambientes virtuais Python
+.venv/
+venv/
+env/
+
+# Cache e artefatos Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Logs e arquivos do sistema operacional
+*.log
+.DS_Store
+Thumbs.db
+
+# Contexto local da aplicação
+/source/
+
+# Bancos de dados locais
+data/sabor_da_terra.db
+data/chroma_db/
+data/chroma/

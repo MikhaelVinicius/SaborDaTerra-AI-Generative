@@ -16,16 +16,12 @@ def limpar_produtores(df):
     return df
 
 def limpar_preco(df):
-    if "preco" in df.columns:
-        df["preco"] = (
-            df['preco']
-            .astype(str)
-            .str.replace("R$", "", regex=False)
-            .str.replace(".", "", regex=False)
-            .str.replace(",", ".", regex=False)
-            .str.strip()
-        )
-        df["preco"] = pd.to_numeric(df["preco"], errors="coerce")
+    for col in ["preco_convencional", "preco_organico"]:
+        if col in df.columns:
+            convertido = pd.to_numeric(df[col], errors="coerce")  
+            invalidos = df.loc[convertido.isna() & df[col].notna(), col].unique()
+            print(f"[preços] {col}: valores não numéricos -> {list(invalidos)}")
+            df[col] = convertido
     return df
 
 def limpar_financeiro(df):
@@ -118,6 +114,8 @@ def executar_pipeline():
         df_sazonalidade_limpo.to_csv(os.path.join(PROCESSED_DIR, "sazonalidade_tratado.csv"), index=False)
         df_lotes_limpo.to_csv(os.path.join(PROCESSED_DIR, "lotes_tratado.csv"), index=False)
 
+        with open(os.path.join(PROCESSED_DIR, "pedidos.json"), "w", encoding="utf-8") as f:
+            json.dump(pedidos_json, f, ensure_ascii=False, indent=4)
         
         print("Dados limpos e salvos com sucesso em 'data/processed/'!")
         
