@@ -149,8 +149,10 @@ def aplicar_regras_negocio(
     codigos = {f.codigo for f in pedido.flags}
     if codigos & {"PRODUTO_NAO_IDENTIFICADO", "FORA_DE_SAFRA", "SEM_PRODUTOR_ATIVO", "SEM_PRODUTOR_ORGANICO"}:
         pedido.status = "bloqueado"
-    elif pedido.flags or pedido.campos_ausentes or pedido.perguntas_de_esclarecimento:
+
+    elif (codigos - {"URGENTE", "SAFRA_BAIXA"}) or pedido.campos_ausentes or pedido.perguntas_de_esclarecimento:
         pedido.status = "revisar"
+    
     else:
         pedido.status = "pronto"
 

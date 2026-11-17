@@ -42,7 +42,9 @@ CATÁLOGO DE PRODUTOS VÁLIDOS: [{lista_prod}]
 
 REGRAS DE EXTRAÇÃO:
 - Normalize gírias e abreviações ("cx" -> "caixa", "qjo" -> "Queijo Coalho") mapeando para o CATÁLOGO DE PRODUTOS VÁLIDOS. Se não existir no catálogo, use "DESCONHECIDO".
-- Se a quantidade for vaga ("umas caixas", "um pouco"), coloque quantidade=null e adicione "quantidade" em campos_ausentes.
+- Se houver número, extraia-o mesmo com "uns", "cerca de", "mais ou menos" (ex: "uns 5kg" -> quantidade=5.0). Use quantidade=null SOMENTE se não houver número ("umas caixas", "um pouco") e adicione "quantidade (produto)" em campos_ausentes.
+- "de cada" significa a mesma quantidade para cada item citado.
+- Grupo com lista explícita ("frutas variadas (manga, banana): 60kg no total"): crie um item por produto citado, com quantidade=null, e pergunte em perguntas_de_esclarecimento como dividir o total. Use "DESCONHECIDO" só se não houver lista.
 - Se não houver data ou dia mencionado, coloque prazo.data_estimada=null.
 - Escreva perguntas_de_esclarecimento curtas apenas se houver dados faltantes ou ambíguos.
 

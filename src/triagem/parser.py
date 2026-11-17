@@ -37,10 +37,24 @@ def extrair_pedido_llm(
     texto_pedido: str,
     catalogo_produtos: list[str],
     data_referencia: str,
+    pedido_pendente: PedidoTriado | dict | str | None = None,
     tentativas: int = 2
 ) -> PedidoTriado:
     system_prompt = montar_prompt_extracao(catalogo_produtos, data_referencia)
-    prompt_atual = f"Extraia os dados do seguinte pedido:\n<pedido>\n{texto_pedido}\n</pedido>"
+    
+    bloco_pendente = ""
+    if pedido_pendente is not None:
+        conteudo_pendente = (
+            pedido_pendente.model_dump_json(indent=2)
+            if isinstance(pedido_pendente, PedidoTriado)
+            else str(pedido_pendente)
+        )
+        bloco_pendente = f"<pedido_pendente>\n{conteudo_pendente}\n</pedido_pendente>\n"
+
+    prompt_atual = (
+        f"Extraia os dados da seguinte mensagem:\n"
+        f"{bloco_pendente}<pedido>\n{texto_pedido}\n</pedido>"
+    )
     ultimo_erro = None
 
     for tentativa in range(tentativas + 1):
