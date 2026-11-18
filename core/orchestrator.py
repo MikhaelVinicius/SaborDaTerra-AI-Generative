@@ -82,38 +82,62 @@ def _eh_erro_transitorio(exc: Exception) -> bool:
     codigo = getattr(exc, "code", None)
     return codigo in {500, 502, 503, 504}
 
+
+def _enviar_com_retry(chat, mensagem: str):
+    """Envia uma mensagem aplicando o retry curto configurado."""
+    ultima_excecao = None
+
+    for tentativa in range(config.GEMINI_MAX_RETRIES + 1):
+        try:
+            with Rastreio() as chamadas:
+                resp = chat.send_message(mensagem)
+
+            return resp, chamadas
+
+        except (errors.ServerError, httpx.TimeoutException) as exc:
+            # Erros fora da política de resiliência devem continuar
+            # sendo propagados imediatamente.
+            if not _eh_erro_transitorio(exc):
+                raise
+
+            ultima_excecao = exc
+
+            if tentativa < config.GEMINI_MAX_RETRIES:
+                time.sleep(config.GEMINI_RETRY_DELAY_SECONDS)
+
+    if ultima_excecao is not None:
+        raise ultima_excecao
+
+    raise RuntimeError(
+        "Não foi possível obter resposta do modelo."
+    )
+
+
 def responder(chat, mensagem: str) -> tuple[str, list[dict]]:
     """Envia a mensagem com retry curto e fallback automático de modelo."""
-    ultima_excecao = None
 
     # Se esta sessão já ativou um fallback anteriormente,
     # continua usando o mesmo chat.
     chat_ativo = getattr(chat, "_sabor_chat_ativo", None) or chat
 
-    # Modelo ativo: tentativa normal + retries configurados.
-    for tentativa in range(config.GEMINI_MAX_RETRIES + 1):
-        try:
-            with Rastreio() as chamadas:
-                resp = chat_ativo.send_message(mensagem)
+    try:
+        resp, chamadas = _enviar_com_retry(
+            chat_ativo,
+            mensagem,
+        )
 
-            return (
-                resp.text
-                or "Não consegui gerar uma resposta. Tente reformular.",
-                chamadas,
-            )
+        return (
+            resp.text
+            or "Não consegui gerar uma resposta. Tente reformular.",
+            chamadas,
+        )
 
-        except (errors.ServerError, httpx.TimeoutException) as exc:
-            ultima_excecao = exc
+    except (errors.ServerError, httpx.TimeoutException) as exc:
+        # Só erros transitórios podem provocar troca de modelo.
+        if not _eh_erro_transitorio(exc):
+            raise
 
-            # Erros não transitórios não devem acionar retry/fallback.
-            if not _eh_erro_transitorio(exc):
-                raise
-
-            # Ainda existem retries disponíveis para o modelo atual.
-            if tentativa < config.GEMINI_MAX_RETRIES:
-                time.sleep(config.GEMINI_RETRY_DELAY_SECONDS)
-
-    # O modelo ativo continuou indisponível.
+    # O modelo ativo continuou indisponível após os retries.
     modelo_atual = getattr(
         chat_ativo,
         "_sabor_modelo",
@@ -131,8 +155,7 @@ def responder(chat, mensagem: str) -> tuple[str, list[dict]]:
             [],
         )
 
-        # Recupera todo o histórico do chat atual para preservar
-        # o contexto ao trocar de modelo.
+        # Preserva o histórico ao trocar de modelo.
         historico = chat_ativo.get_history()
 
         chat_fallback = novo_chat(
@@ -141,11 +164,14 @@ def responder(chat, mensagem: str) -> tuple[str, list[dict]]:
             historico=historico,
         )
 
-        # Mantém o fallback ativo nas próximas mensagens desta sessão.
+        # Mantém o fallback ativo nas próximas mensagens da sessão.
         chat._sabor_chat_ativo = chat_fallback
 
-        with Rastreio() as chamadas:
-            resp = chat_fallback.send_message(mensagem)
+        # O fallback recebe exatamente a mesma política de retry.
+        resp, chamadas = _enviar_com_retry(
+            chat_fallback,
+            mensagem,
+        )
 
         return (
             resp.text
@@ -153,11 +179,8 @@ def responder(chat, mensagem: str) -> tuple[str, list[dict]]:
             chamadas,
         )
 
-    # Se já estávamos usando o fallback, ou se não existe fallback
-    # configurado, propaga a última falha transitória.
-    if ultima_excecao is not None:
-        raise ultima_excecao
-
+    # Se o próprio fallback esgotou seus retries,
+    # _enviar_com_retry já propagou a última exceção.
     raise RuntimeError(
         "Não foi possível obter resposta do modelo."
     )

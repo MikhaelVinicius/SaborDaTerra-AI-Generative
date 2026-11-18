@@ -188,3 +188,64 @@ def test_responder_usa_fallback_apos_timeouts():
     assert chamadas == []
     assert chat_principal.send_message.call_count == 2
     assert chat_principal._sabor_chat_ativo is chat_fallback
+
+
+def _erro_504():
+    return errors.ServerError(
+        504,
+        {
+            "error": {
+                "code": 504,
+                "message": "Deadline expired before operation could complete.",
+                "status": "DEADLINE_EXCEEDED",
+            }
+        },
+    )
+
+def test_fallback_tambem_faz_retry_apos_504():
+    chat_principal = Mock()
+
+    chat_principal._sabor_chat_ativo = None
+    chat_principal._sabor_modelo = "gemini-3.8-flash"
+    chat_principal._sabor_ferramentas = ["ferramenta-teste"]
+
+    # Principal falha nas duas tentativas.
+    chat_principal.send_message.side_effect = [
+        _erro_503(),
+        _erro_503(),
+    ]
+
+    chat_principal.get_history.return_value = []
+
+    chat_fallback = Mock()
+    chat_fallback._sabor_modelo = "gemini-3.1-flash-lite"
+    chat_fallback._sabor_ferramentas = ["ferramenta-teste"]
+
+    resposta = Mock()
+    resposta.text = "Fallback recuperado"
+
+    # Primeira tentativa do fallback recebe 504;
+    # segunda tentativa funciona.
+    chat_fallback.send_message.side_effect = [
+        _erro_504(),
+        resposta,
+    ]
+
+    with (
+        patch("core.orchestrator.time.sleep"),
+        patch(
+            "core.orchestrator.novo_chat",
+            return_value=chat_fallback,
+        ),
+    ):
+        texto, chamadas = responder(
+            chat_principal,
+            "Teste de 504 no fallback",
+        )
+
+    assert texto == "Fallback recuperado"
+    assert chamadas == []
+
+    assert chat_principal.send_message.call_count == 2
+    assert chat_fallback.send_message.call_count == 2
+    assert chat_principal._sabor_chat_ativo is chat_fallback
