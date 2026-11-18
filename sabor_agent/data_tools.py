@@ -7,7 +7,14 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 
-DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "source" / "Facepe"
+DEFAULT_DATA_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "processed"
+    / "raw"
+    / "documents"
+    / "dados_csv"
+)
 PRICE_PERIOD = "2026-10"
 
 
