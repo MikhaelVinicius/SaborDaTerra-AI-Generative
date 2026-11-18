@@ -18,6 +18,16 @@ except ImportError:
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 TEMPERATURE = float(os.getenv("GEMINI_TEMPERATURE", "0.2"))
 
+# Resiliência do orquestrador
+GEMINI_FALLBACK_MODEL = os.getenv(
+    "GEMINI_FALLBACK_MODEL",
+    "gemini-3.1-flash-lite",
+)
+GEMINI_MAX_RETRIES = int(os.getenv("GEMINI_MAX_RETRIES", "1"))
+GEMINI_RETRY_DELAY_SECONDS = float(
+    os.getenv("GEMINI_RETRY_DELAY_SECONDS", "1.0")
+)
+
 # Credenciais: mesma regra do sabor_rag (chave do AI Studio).
 # Opcionalmente Vertex AI se não houver chave e o projeto estiver definido.
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
