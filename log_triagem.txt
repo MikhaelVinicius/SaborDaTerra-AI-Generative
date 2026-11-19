@@ -1,0 +1,70 @@
+============================================================
+2. RODANDO NOS PEDIDOS REAIS (pedidos.json)
+============================================================
+Total de pedidos carregados: 15
+
+Pedido PED-2026-001 (Restaurante Raízes) -> Status: PRONTO | Itens: ['queijo coalho (30.0 kg)', 'manteiga de garrafa (10.0 kg)', 'mel silvestre (5.0 kg)', 'coentro (20.0 maço)', 'cebolinha (10.0 maço)', 'ricota (5.0 kg)'] | Flags: 0
+------------------------------------------------------------
+Pedido PED-2026-002 (Mercado Bom Preço) -> Status: PRONTO | Itens: ['goiaba paluma (50.0 kg)', 'banana prata (40.0 kg)', 'maracujá (25.0 kg)', 'macaxeira (60.0 kg)', 'inhame (30.0 kg)','tomate (20.0 kg)', 'alface (50.0 unidade)', 'rúcula (30.0 maço)'] | Flags: 0
+------------------------------------------------------------
+Pedido PED-2026-003 (Chef Amanda - Bistrô Sertão Gourmet) -> Status: BLOQUEADO | Itens: ['DESCONHECIDO (15.0 kg)', 'mel de jandaíra (3.0 kg)'] | Flags: 2
+   * [URGENTE] Entrega em menos de 48h (2026-10-29).
+   * [PRODUTO_NAO_IDENTIFICADO] 'daquele queijo q vcs mandaram da ultima vez, o mais artesanal sabe? uns 15kg' não corresponde ao catálogo da cooperativa.
+   ? Perguntas: ['Qual é a variedade exata do queijo enviado da última vez (queijo coalho, queijo manteiga ou ricota)?']
+------------------------------------------------------------
+Pedido PED-2026-004 (Prefeitura de Garanhuns - PNAE) -> Status: PRONTO | Itens: ['banana prata (200.0 kg)', 'goiaba paluma (100.0 kg)', 'macaxeira (150.0 kg)', 'inhame (80.0 kg)', 'alface (200.0 unidade)', 'coentro (100.0 maço)', 'tomate (50.0 kg)', 'mel silvestre (20.0 kg)', 'ovos caipira (100.0 dúzia)'] | Flags: 0
+------------------------------------------------------------
+Pedido PED-2026-005 (Dona Cremilda - Lanchonete da Feira) -> Status: PRONTO | Itens: ['queijo coalho (10.0 kg)', 'manteiga de garrafa (5.0 kg)'] | Flags: 0
+------------------------------------------------------------
+Pedido PED-2026-006 (Rede SuperBom Atacado) -> Status: PRONTO | Itens: ['queijo coalho (200.0 kg)', 'queijo manteiga (50.0 kg)', 'mel silvestre (40.0 kg)', 'goiaba paluma (300.0 kg)'] |Flags: 1
+   * [URGENTE] Entrega em menos de 48h (2026-10-29).
+------------------------------------------------------------
+Pedido PED-2026-007 (Hotel Fazenda Serra Negra) -> Status: BLOQUEADO | Itens: ['queijo coalho (25.0 kg)', 'queijo manteiga (10.0 kg)', 'DESCONHECIDO (8.0 kg)', 'goiaba paluma (20.0 kg)', 'cajá (10.0 kg)', 'rapadura (15.0 kg)', 'tapioca (10.0 kg)', 'frango caipira (40.0 kg)', 'ovos caipira (30.0 dúzia)'] | Flags: 2
+   * [PRODUTO_NAO_IDENTIFICADO] 'mel variado 8kg (preferencialmente orgânico)' não corresponde ao catálogo da cooperativa.
+   * [SAFRA_BAIXA] cajá está com disponibilidade baixa em nov. Safra muito curta: nov-jan.
+   ? Perguntas: ['Qual variedade de mel é desejada (mel silvestre ou mel de jandaíra)?']
+------------------------------------------------------------
+Pedido PED-2026-008 (Marcos - Sorveteria Tropical) -> Status: REVISAR | Itens: ['morango (50.0 kg)', 'amora (50.0 kg)'] | Flags: 1
+   * [PRAZO_AMBIGUO] Não foi possível determinar data exata a partir de 'None'.
+   ? Perguntas: ['Para quando seria a primeira entrega semanal desejada?']
+------------------------------------------------------------
+Pedido PED-2026-009 (Hospital São Francisco) -> Status: BLOQUEADO | Itens: ['goiaba paluma (None kg)', 'banana prata (None kg)', 'manga tommy (None kg)', 'maracujá (None kg)', 'alface (None kg)', 'couve (None kg)', 'espinafre (None kg)', 'tomate (None kg)', 'cebolinha (None kg)', 'ovos caipira (50.0 dúzia)', 'mel silvestre (5.0 kg)'] | Flags: 12
+   * [PRAZO_AMBIGUO] Não foi possível determinar data exata a partir de 'None'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Frutas variadas (goiaba, banana, manga, maracujá): 100kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Frutas variadas (goiaba, banana, manga, maracujá): 100kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Frutas variadas (goiaba, banana, manga, maracujá): 100kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Frutas variadas (goiaba, banana, manga, maracujá): 100kg total'.
+   * [SEM_PRODUTOR_ORGANICO] Nenhum produtor certificado para maracujá orgânico.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Hortaliças (alface, couve, espinafre, tomate, cebolinha): 60kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Hortaliças (alface, couve, espinafre, tomate, cebolinha): 60kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Hortaliças (alface, couve, espinafre, tomate, cebolinha): 60kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Hortaliças (alface, couve, espinafre, tomate, cebolinha): 60kg total'.
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'Hortaliças (alface, couve, espinafre, tomate, cebolinha): 60kg total'.
+   * [SEM_PRODUTOR_ORGANICO] Nenhum produtor certificado para ovos caipira orgânico.
+   ? Perguntas: ['Como deseja distribuir os 100kg totais entre goiaba, banana, manga e maracujá?', 'Como deseja distribuir os 60kg totais entre alface, couve, espinafre, tomate e cebolinha?', 'A partir de qual data deve ser iniciado o fornecimento semanal?']
+------------------------------------------------------------
+Pedido PED-2026-010 (João Pedro - Feira Orgânica do Recife) -> Status: BLOQUEADO | Itens: ['DESCONHECIDO (None None)'] | Flags: 2
+   * [QUANTIDADE_AMBIGUA] Quantidade não especificada em 'tudo que vocês tiverem COM certificação orgânica'.
+   * [PRODUTO_NAO_IDENTIFICADO] 'tudo que vocês tiverem COM certificação orgânica' não corresponde ao catálogo da cooperativa.
+   ? Perguntas: ['Quais produtos orgânicos específicos e quais quantidades semanais ou mensais você deseja adquirir?']
+------------------------------------------------------------
+Pedido PED-2026-011 (Tropical Fruits Exportadora) -> Status: BLOQUEADO | Itens: ['manga tommy (500.0 kg)', 'goiaba paluma (300.0 kg)', 'maracujá (200.0 kg)'] | Flags: 2
+   * [PRAZO_AMBIGUO] Não foi possível determinar data exata a partir de 'None'.
+   * [SEM_PRODUTOR_ORGANICO] Nenhum produtor certificado para maracujá orgânico.
+   ? Perguntas: ['A partir de qual data deve ser realizado o primeiro envio mensal?']
+------------------------------------------------------------
+Pedido PED-2026-012 (Maria das Graças (Produtora P001)) -> Status: REVISAR | Itens: [] | Flags: 2
+   * [PRAZO_AMBIGUO] Não foi possível determinar data exata a partir de 'None'.
+   * [SEM_ITENS_IDENTIFICADOS] Nenhum item de compra identificado na mensagem (pode ser consulta, oferta de produtor ou notificação).
+   ? Perguntas: ['Você deseja fazer um pedido de compra ou a mensagem é referente apenas à consulta financeira de vendas e repasses?']
+------------------------------------------------------------
+Pedido PED-2026-013 (SESC - Unidade Garanhuns) -> Status: BLOQUEADO | Itens: ['DESCONHECIDO (500.0 kg)', 'DESCONHECIDO (200.0 kg)', 'queijo coalho (50.0 kg)', 'mel silvestre (10.0 kg)','ovos caipira (200.0 dúzia)', 'frango caipira (100.0 kg)', 'macaxeira (80.0 kg)'] | Flags: 2
+   * [PRODUTO_NAO_IDENTIFICADO] 'Frutas: 500kg variadas' não corresponde ao catálogo da cooperativa.
+   * [PRODUTO_NAO_IDENTIFICADO] 'Hortaliças: 200kg variadas' não corresponde ao catálogo da cooperativa.
+   ? Perguntas: ['Quais frutas e quantidades específicas compõem os 500kg de frutas variadas?', 'Quais hortaliças e quantidades específicas compõem os 200kg de hortaliças variadas?', 'Qual é o dia específico de janeiro de 2027 para a primeira entrega da colônia de férias?']
+------------------------------------------------------------
+Pedido PED-2026-014 (ADAGRO - Agência de Defesa Agropecuária) -> Status: REVISAR | Itens: []| Flags: 1
+   * [SEM_ITENS_IDENTIFICADOS] Nenhum item de compra identificado na mensagem (pode ser consulta, oferta de produtor ou notificação).
+------------------------------------------------------------
+Pedido PED-2026-015 (Cícero (Produtor P003)) -> Status: PRONTO | Itens: ['queijo coalho (200.0 kg)', 'manteiga de garrafa (30.0 kg)'] | Flags: 1
+   * [URGENTE] Entrega em menos de 48h (2026-10-31).
