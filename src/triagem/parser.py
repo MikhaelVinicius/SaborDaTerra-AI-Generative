@@ -9,7 +9,7 @@ from .prompts import PROMPT_ROTEADOR, montar_prompt_extracao
 
 load_dotenv()
 
-MODELO = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+MODELO = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 _client: genai.Client | None = None
 
 def _get_client() -> genai.Client:
