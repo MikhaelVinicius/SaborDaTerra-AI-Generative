@@ -14,7 +14,7 @@ O projeto foi desenvolvido em frentes modulares e consolidado em uma arquitetura
   * Containerização com **Docker** (`Dockerfile`, `deploy/entrypoint.sh`) e pipeline de deploy automatizado para **Google Cloud Run** via **Cloud Build** (`cloudbuild.yaml`, `deploy/setup_gcp.sh`, `deploy/deploy.sh`).
 
 * **Triagem Comercial de Pedidos (`src/triagem/`, `sabor_triagem/`)**
-  * Pipeline híbrido que combina **Google Gemini (`gemini-3.5-flash-lite`)** com extração estruturada via **Pydantic** (`schemas.py`) e regras determinísticas em Python (`regras.py`).
+  * Pipeline híbrido que combina **Google Gemini (`gemini-3.8-flash`)** com extração estruturada via **Pydantic** (`schemas.py`) e regras determinísticas em Python (`regras.py`).
   * Tolera mensagens informais, abreviações e erros ortográficos (estilo WhatsApp), normalizando itens do catálogo, calculando prazos e urgência (`alta` para entregas em menos de 48h), detectando ambiguidades (ex.: *mel silvestre* vs. *mel de jandaíra*) e mantendo estado incremental (`pedido_pendente`) entre turnos.
 
 * **Base Documental & RAG (`sabor_rag/`, `data/processed/raw/documents/`)**
@@ -95,7 +95,7 @@ cp .env.example .env
 Principais variáveis no `.env`:
 ```env
 GEMINI_API_KEY=sua_chave_aqui
-GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_MODEL=gemini-3.8-flash
 APP_PASSWORD=                  # Opcional: define senha de acesso na tela inicial
 MOSTRAR_FERRAMENTAS=true       # Exibe o painel técnico de chamadas de ferramentas no chat
 ```
