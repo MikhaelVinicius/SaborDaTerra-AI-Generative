@@ -26,6 +26,7 @@ O projeto foi desenvolvido em frentes modulares e consolidado em uma arquitetura
     * `get_producer_summary`: consolida vendas, volumes (kg) e status de pagamentos (`pago`, `pendente`, `unclassified`) por produtor (`Pxxx`) e intervalo de datas (`AAAA-MM-DD`).
     * `lookup_price`: consulta a tabela vigente de preços (`matches` exatos e `suggestions` de variantes) sem inferir valores inexistentes.
     * `lookup_lot`: rastreabilidade operacional de lotes com **mascaramento obrigatório de nome e CPF do produtor** por política de privacidade.
+    * `draft_producer_order_notifications`: recebe o JSON estruturado de um pedido triado com status `pronto`, valida produtor ativo e certificação orgânica vigente, aloca automaticamente apenas quando há um único produtor elegível e gera rascunhos de notificação sem copiar dados pessoais do comprador.
 
 * **Tratamento de Dados & Persistência (`data/processed/`, `src/database/`, `src/agents/`)**
   * Pipelines de higienização e padronização dos datasets brutos (`produtores_tratado.csv`, `lotes_tratado.csv`, `precos_tratados.csv`, `financeiro_tratado.csv`, `sazonalidade_tratado.csv` e `pedidos.json`).
