@@ -18,7 +18,7 @@ st.set_page_config(page_title="Sabor da Terra · Assistente", page_icon="🌱", 
 
 # Perguntas do roteiro da demo (um clique na barra lateral)
 EXEMPLOS = [
-    "Faz a triagem do pedido PED-2026-003",
+    "Consultar preços de mel e queijo",
     "Quais produtores têm certificação orgânica vigente para mel?",
     "E a Josefa?",
     "Qual a rastreabilidade do queijo do lote 2024-089?",
