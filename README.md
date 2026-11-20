@@ -6,6 +6,8 @@ Assistente conversacional multi-agente desenvolvido para apoiar a operação com
 
 ## 🏗️ Arquitetura e Módulos Integrados
 
+![Arquitetura do Sistema Sabor da Terra](docs/Sabor_da_Terra.png)
+
 O projeto foi desenvolvido em frentes modulares e consolidado em uma arquitetura orientada a ferramentas (*Tool Calling*):
 
 * **Interface, Orquestração & Cloud/DevOps (`app.py`, `core/`, `deploy/`)**
@@ -38,24 +40,90 @@ O projeto foi desenvolvido em frentes modulares e consolidado em uma arquitetura
 
 ```text
 SaborDaTerra-AI/
-├── app.py                        # Aplicação principal Streamlit
-├── core/                         # Configuração, LLM client, descoberta de tools e orquestrador
-├── sabor_triagem/                # Adaptador de ferramenta do módulo de triagem
-├── src/triagem/                  # Schemas Pydantic, parser LLM, prompts, regras e relatórios
-├── sabor_rag/                    # Loader, chunking, embeddings, ChromaDB e retriever RAG
-├── sabor_agent/                  # Ferramentas estruturadas (dados, formatadores e orquestrador)
-├── sabor_agentes/                # Adaptador de descoberta de ferramentas para o agente
-├── sabor_dados/                  # Adaptador de consulta aos dados tratados
-├── src/database/                 # Carga SQLite e configuração de armazenamento
-├── src/agents/                   # Ferramentas de consulta SQL
+├── .streamlit/
+│   └── config.toml               # Configurações de tema e servidor do Streamlit
+├── core/
+│   ├── __init__.py
+│   ├── config.py                 # Configurações globais e leitura de variáveis de ambiente
+│   ├── integracao.py             # Descoberta e acoplamento dinâmico das tools dos módulos
+│   ├── llm.py                    # Cliente de comunicação com a API do Google Gemini
+│   └── orchestrator.py           # Orquestrador central de function calling e sessão
 ├── data/
-│   └── processed/                # CSVs/JSON tratados e documentos brutos da cooperativa
-├── scripts/                      # Utilitários (build_index.py, demo_data_tools.py, testes)
-├── deploy/                       # Scripts de setup e deploy no Google Cloud Platform
-├── docs/                         # Documentação técnica detalhada (ferramentas e RAG)
-├── tests/                        # Suíte automatizada com Pytest
-├── Dockerfile                    # Imagem de produção
-├── cloudbuild.yaml               # Pipeline CI/CD Google Cloud Build
+│   ├── chroma/                   # Base vetorial persistente do ChromaDB (gerada localmente)
+│   ├── processed/                # Datasets tratados (CSVs/JSON) e documentos brutos da cooperativa
+│   └── sabor_da_terra.db         # Banco de dados relacional SQLite (gerado localmente)
+├── deploy/
+│   ├── deploy.sh                 # Script de build e deploy no Google Cloud Run
+│   ├── entrypoint.sh             # Ponto de entrada do container em produção
+│   └── setup_gcp.sh              # Provisionamento inicial de APIs e permissões no GCP
+├── docs/
+│   ├── ferramentas-agente.md     # Especificação técnica e contratos das ferramentas do agente
+│   └── Sabor_da_Terra.png        # Diagrama de arquitetura do sistema
+├── sabor_agent/
+│   ├── __init__.py
+│   ├── data_tools.py             # Consultas tabulares (produtores, preços e lotes)
+│   ├── formatters.py             # Formatadores de resposta e rascunhos de notificação
+│   └── orchestrator.py           # Despacho local das ferramentas estruturadas
+├── sabor_agentes/
+│   └── tool.py                   # Adaptador público (TOOLS) para o orquestrador
+├── sabor_dados/
+│   ├── __init__.py
+│   └── tool.py                   # Adaptador de consulta aos dados estruturados
+├── sabor_rag/
+│   ├── __init__.py
+│   ├── chunking.py               # Divisão dos documentos em chunks com sobreposição
+│   ├── config.py                 # Parâmetros do pipeline RAG e modelos
+│   ├── embeddings.py             # Geração de embeddings com gemini-embedding-001
+│   ├── indexer.py                # Indexação dos chunks no ChromaDB
+│   ├── loader.py                 # Carregamento de documentos e extração de metadados
+│   ├── models.py                 # Modelos de dados de documentos, chunks e citações
+│   ├── redaction.py              # Sanitização e mascaramento de dados sensíveis (PII)
+│   ├── retriever.py              # Busca semântica por similaridade de cosseno
+│   ├── tool.py                   # Interface pública do módulo RAG para o agente
+│   └── vector_store.py           # Gerenciamento da coleção persistente no ChromaDB
+├── sabor_triagem/
+│   ├── __init__.py
+│   └── tool.py                   # Interface pública do módulo de triagem para o agente
+├── scripts/
+│   ├── __init__.py
+│   ├── build_index.py            # Script CLI para construir o índice vetorial (RAG)
+│   ├── demo_data_tools.py        # Script CLI de demonstração das consultas tabulares
+│   └── testar_vector_store.py    # Utilitário de teste de recuperação no ChromaDB
+├── src/
+│   ├── agents/
+│   │   └── ferramentas_sql.py    # Ferramentas de consulta relacional no SQLite
+│   ├── database/
+│   │   ├── carregar_sql.py       # Carga dos datasets tratados para o banco SQLite
+│   │   ├── config.py             # Caminhos e configurações do banco SQLite
+│   │   └── vector_store.py       # Integração auxiliar de armazenamento vetorial
+│   └── triagem/
+│       ├── __init__.py
+│       ├── data_pipeline.py      # Carregamento e preparação do catálogo/regras
+│       ├── parser.py             # Extração estruturada de pedidos via Gemini
+│       ├── pipeline.py           # Fluxo principal de execução da triagem
+│       ├── prompts.py            # Prompts de sistema e instruções de extração
+│       ├── regras.py             # Validações determinísticas, urgência e ambiguidades
+│       ├── relatorios.py         # Geração de resumos e logs da triagem
+│       ├── schemas.py            # Modelos Pydantic de entrada e saída da triagem
+│       └── tools.py              # Ferramentas auxiliares do fluxo de triagem
+├── tests/
+│   ├── test_chunking.py
+│   ├── test_core_orchestrator_resilience.py
+│   ├── test_data_tools.py
+│   ├── test_formatters.py
+│   ├── test_integracao.py
+│   ├── test_loader.py
+│   ├── test_orchestrator.py
+│   ├── test_rag_tool.py
+│   ├── test_sabor_agentes_tool.py
+│   └── test_triagem.py
+├── .dockerignore                 # Arquivos ignorados no build da imagem Docker
+├── .env.example                  # Modelo de variáveis de ambiente
+├── .gitignore                    # Arquivos e diretórios ignorados pelo Git
+├── app.py                        # Aplicação principal da interface web Streamlit
+├── cloudbuild.yaml               # Pipeline CI/CD no Google Cloud Build
+├── Dockerfile                    # Definição da imagem Docker de produção
+├── README.md                     # Documentação geral do projeto
 └── requirements.txt              # Dependências Python do projeto
 ```
 
