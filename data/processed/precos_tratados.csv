@@ -1,0 +1,54 @@
+produto,unidade,preco_convencional,preco_organico,desconto_atacado_pct,volume_minimo_atacado_kg,observacao
+goiaba paluma extra,kg,4.0,5.5,10,100,
+goiaba paluma especial,kg,3.5,4.5,10,100,
+manga tommy,kg,5.0,5.5,10,100,Disponível apenas out-mar
+acerola,kg,6.0,7.5,8,50,
+banana prata,kg,3.5,,8,50,Sem produtor orgânico
+maracujá,kg,6.0,,8,50,Sem produtor orgânico
+cajá,kg,8.0,,0,0,Safra curta nov-jan. Disponibilidade limitada
+umbu,kg,7.0,,0,0,Safra fev-mai apenas
+graviola,kg,9.0,,0,0,Disponibilidade irregular
+coco verde,unidade,3.5,,10,50,
+morango,kg,18.0,22.0,5,30,Safra jun-set. Fora de safra: sob consulta
+amora,kg,25.0,30.0,5,20,Disponibilidade limitada
+mirtilo,kg,45.0,55.0,0,0,Produção pequena mai-set
+framboesa,kg,50.0,60.0,0,0,Produção muito pequena jun-set
+queijo coalho,kg,32.0,38.0,5,100,
+queijo manteiga,kg,38.0,,5,50,Apenas P003 (convencional)
+ricota,kg,28.0,,5,30,Apenas P003
+manteiga de garrafa,kg,45.0,52.0,5,30,
+nata,kg,25.0,30.0,0,0,Produção pequena
+iogurte natural,litro,12.0,,0,0,Apenas P011 (sem SIE para revenda)
+leite,litro,4.5,5.5,0,0,Disponível para derivados. Volume reduz jun-set
+mel silvestre,kg,48.0,58.0,8,20,
+mel de jandaíra,kg,,140.0,0,0,Apenas P002. Produção limitada
+própolis,kg,,180.0,0,0,Apenas P002
+pólen,kg,,85.0,0,0,Apenas P018
+cera de abelha,kg,,65.0,0,0,Apenas P018
+alface,unidade,2.5,2.8,5,50,
+coentro,maço,1.8,2.0,5,50,
+cebolinha,maço,1.8,2.0,5,50,
+rúcula,maço,3.0,3.5,5,30,
+espinafre,maço,3.5,4.0,5,30,
+couve,maço,2.5,3.0,5,30,
+hortelã,maço,2.0,2.5,5,30,
+manjericão,maço,2.5,3.0,5,30,
+tomate santa cruz,kg,6.0,7.0,5,50,
+tomate cereja,kg,10.0,12.0,0,0,Apenas P004
+pimentão verde,kg,5.0,6.0,5,30,
+pimentão colorido,kg,7.0,8.0,5,30,
+pepino,kg,4.5,5.0,5,30,
+berinjela,kg,5.0,5.5,5,30,
+quiabo,kg,5.5,6.0,5,30,Reduz no frio (jun-ago)
+macaxeira,kg,3.2,,10,100,
+inhame,kg,4.8,,10,50,Pico abr-jul
+batata doce,kg,4.0,,10,50,
+farinha de mandioca,kg,8.0,,8,50,
+tapioca/goma,kg,6.5,,8,30,
+rapadura,kg,12.0,,8,50,Apenas P016
+açúcar mascavo,kg,10.0,,8,30,Apenas P016
+melado,litro,15.0,,0,0,Apenas P016
+geleia de frutas,kg,30.0,35.0,0,0,Variados sabores. P008
+doce de goiaba,kg,25.0,28.0,0,0,P008
+frango caipira,kg,28.0,,5,30,ATENÇÃO: P017 sem SIE - venda direta apenas
+ovos caipira,dúzia,18.0,,5,50,dúzias para atacado. P017
