@@ -4,6 +4,26 @@ Assistente conversacional multi-agente desenvolvido para apoiar a operação com
 
 ---
 
+## 👨‍💻 Minha contribuição — Mikhael Vinicius | RAG Engineer
+
+Neste projeto colaborativo, fui responsável pela **engenharia, arquitetura, desenvolvimento e implementação de ponta a ponta do módulo de RAG (Retrieval-Augmented Generation) e da base documental**, incluindo sua integração à arquitetura de agentes de IA do sistema.
+
+### Principais responsabilidades e entregas
+
+- **Arquitetura RAG:** concepção e implementação de um pipeline modular de ingestão, indexação e recuperação semântica de documentos em Python.
+- **Processamento documental:** carregamento de certificações, contratos e fichas técnicas, extração de metadados, mascaramento de dados sensíveis (PII) e divisão de textos em *chunks* com sobreposição, preservando contexto e rastreabilidade.
+- **Embeddings e banco vetorial:** integração com `gemini-embedding-001` (vetores de 3.072 dimensões) e implementação da persistência e indexação no ChromaDB. Na base documental trabalhada, foram indexados **20 documentos e 45 chunks**.
+- **Recuperação semântica:** implementação do *Retriever* com busca por similaridade de cosseno, filtros por categoria documental, seleção `top_k`, limiar de relevância e retorno de trechos acompanhados de fontes e pontuações de similaridade.
+- **Integração com AI Agents:** desenvolvimento da ferramenta `consultar_documentos()` e integração ao orquestrador Gemini por *Function Calling*, separando a recuperação documental da geração centralizada de respostas e evitando uma etapa generativa redundante.
+- **Resiliência e integração:** contribuição para o tratamento de falhas transitórias da API Gemini, com *timeout*, *retry* e *fallback* entre modelos, preservando o histórico da conversa, além de correções de integração entre módulos.
+- **Qualidade e validação:** desenvolvimento de testes automatizados de processamento documental, recuperação e integração, testes de regressão para falhas do Gemini e validação prática de consultas com rastreabilidade das fontes.
+
+**Competências aplicadas:** Python · RAG · Generative AI · LLMs · AI Agents · Function Calling · Semantic Search · Embeddings · ChromaDB · Google Gemini API · Data Privacy · Software Architecture · Automated Testing · Git.
+
+> O sistema foi desenvolvido em equipe. As contribuições acima descrevem minha atuação individual, sem atribuir a mim a autoria dos demais módulos do projeto.
+
+---
+
 ## 🏗️ Arquitetura e Módulos Integrados
 
 ![Arquitetura do Sistema Sabor da Terra](docs/Sabor_da_Terra.png)
